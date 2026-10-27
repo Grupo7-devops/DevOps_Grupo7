@@ -1,37 +1,36 @@
 version: 0.2
 
+env:
+  variables:
+    BUCKET_NAME: "artefactos-grupo7-devops"
+
 phases:
   install:
     runtime-versions:
       python: 3.12
     commands:
-      - echo "Descargando Requerimientos"
+      - echo "Descargando requerimientos"
       - pip install --upgrade pip
       - pip install -r requirements.txt
+
   build:
     on-failure: ABORT
     commands:
-      - echo "Iniciando la ejecucción de pruebas unitarias"
-      #- python -m pytest --junitxml=reports/pruebas.xml
-      - echo "Pruebas superadas, se genera el artefacto"
+      - echo "Iniciando la ejecución de pruebas unitarias"
+      - python -m pytest --junitxml=reports/pruebas.xml
+
   post_build:
     commands:
-      - echo "Pruebas superadas, se prepara el artefacto"
-      - mkdir -p dist
+      - echo "Pruebas superadas, se genera el artefacto"
       - >
-        tar --exclude='./dist' --exclude='./tests' --exclude='./reports'
-        --exclude='./.git' --exclude='./venv' --exclude='./.venv'
-        --exclude='__pycache__' --exclude='./buildspec.yml'
-        -cf - . | tar -xf - -C dist
+        zip -r microservicio-flask.zip .
+        -x "tests/*" "reports/*" ".git/*" "venv/*" ".venv/*"
+        "*__pycache__*" "buildspec.yml"
+      - echo "Enviando el artefacto a S3"
+      - aws s3 cp microservicio-flask.zip s3://$BUCKET_NAME/microservicio-flask.zip
 
 reports:
   unit-tests:
     files:
       - reports/pruebas.xml
     file-format: JUNITXML
-
-artifacts:
-  name: microservicio-flask
-  base-directory: dist
-  files:
-    - '**/*'
