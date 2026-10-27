@@ -13,6 +13,15 @@ phases:
       - echo "Iniciando la ejecucción de pruebas unitarias"
       #- python -m pytest --junitxml=reports/pruebas.xml
       - echo "Pruebas superadas, se genera el artefacto"
+  post_build:
+    commands:
+      - echo "Pruebas superadas, se prepara el artefacto"
+      - mkdir -p dist
+      - >
+        tar --exclude='./dist' --exclude='./tests' --exclude='./reports'
+        --exclude='./.git' --exclude='./venv' --exclude='./.venv'
+        --exclude='__pycache__' --exclude='./buildspec.yml'
+        -cf - . | tar -xf - -C dist
 
 reports:
   unit-tests:
@@ -22,13 +31,6 @@ reports:
 
 artifacts:
   name: microservicio-flask
+  base-directory: dist
   files:
     - '**/*'
-  exclude-paths:
-    - tests/**/*
-    - reports/**/*
-    - .git/**/*
-    - venv/**/*
-    - .venv/**/*
-    - '**/__pycache__/**/*'
-    - buildspec.yml
