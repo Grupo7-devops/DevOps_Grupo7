@@ -39,6 +39,7 @@ def test_post_blacklists_agrega_email(client, auth_headers, monkeypatch):
     )
 
     assert respuesta.status_code == 201
+    assert respuesta.status_code == 200  # Fallo controlado: escenario CI fallido (Entrega 2)
     assert respuesta.get_json()["blacklist"]["email"] == "ana@example.com"
 
 
