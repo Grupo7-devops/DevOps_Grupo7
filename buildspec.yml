@@ -5,14 +5,14 @@ phases:
     runtime-versions:
       python: 3.12
     commands:
-      - echo "=== FASE 1: INSTALACIÓN DE DEPENDENCIAS ==="
+      - echo "FASE 1: INSTALACION DE DEPENDENCIAS"
       - pip install --upgrade pip
       - pip install -r requirements.txt
       - pip install -r requirements-dev.txt || pip install pytest pytest-mock
 
   pre_build:
     commands:
-      - echo "=== FASE 2: AUTENTICACIÓN EN AMAZON ECR ==="
+      - echo "FASE 2: AUTENTICACION EN AMAZON ECR"
       - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
       - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/blacklist_app
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
@@ -21,20 +21,20 @@ phases:
 
   build:
     commands:
-      - echo "=== FASE 3A: EJECUCIÓN DE PRUEBAS UNITARIAS ==="
+      - echo "FASE 3A: PRUEBAS UNITARIAS"
       - python -m pytest --junitxml=reports/pruebas.xml test/
-      - echo "=== FASE 3B: CONSTRUCCIÓN IMAGEN DOCKER (LINUX/AMD64) ==="
+      - echo "FASE 3B: CONSTRUCCION IMAGEN DOCKER"
       - docker buildx build --platform linux/amd64 -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo "=== FASE 4: PUBLICACIÓN EN ECR Y ARTEFACTOS CD ==="
+      - echo "FASE 4: PUBLICACION EN ECR Y ARTEFACTOS CD"
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - printf '[{"name":"blacklist-api","imageUri":"%s"}]' "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json
       - printf '{"ImageURI":"%s"}' "$REPOSITORY_URI:$IMAGE_TAG" > imageDetail.json
-      - echo "Compilación completada exitosamente el $(date)"
+      - echo "Compilacion completada exitosamente"
 
 reports:
   unit-tests:
