@@ -1,36 +1,51 @@
 version: 0.2
 
-env:
-  variables:
-    BUCKET_NAME: "artefactos-grupo7-devops"
-
 phases:
   install:
     runtime-versions:
       python: 3.12
     commands:
-      - echo "Descargando requerimientos"
+      - echo "=== FASE 1: INSTALACIÓN DE DEPENDENCIAS ==="
       - pip install --upgrade pip
       - pip install -r requirements.txt
+      - pip install -r requirements-dev.txt || pip install pytest pytest-mock
+
+  pre_build:
+    commands:
+      - echo "=== FASE 2: AUTENTICACIÓN EN AMAZON ECR ==="
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/blacklist_app
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
 
   build:
-    on-failure: ABORT
     commands:
-      - echo "Iniciando la ejecución de pruebas unitarias"
-      - python -m pytest --junitxml=reports/pruebas.xml
+      - echo "=== FASE 3A: EJECUCIÓN DE PRUEBAS UNITARIAS ==="
+      - python -m pytest --junitxml=reports/pruebas.xml test/
+      - echo "=== FASE 3B: CONSTRUCCIÓN IMAGEN DOCKER (LINUX/AMD64) ==="
+      - docker buildx build --platform linux/amd64 -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo "Pruebas superadas, se genera el artefacto"
-      - >
-        zip -r microservicio-flask.zip .
-        -x "tests/*" "reports/*" ".git/*" "venv/*" ".venv/*"
-        "*__pycache__*" "buildspec.yml"
-      - echo "Enviando el artefacto a S3"
-      - aws s3 cp microservicio-flask.zip s3://$BUCKET_NAME/microservicio-flask.zip
+      - echo "=== FASE 4: PUBLICACIÓN EN ECR Y ARTEFACTOS CD ==="
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"blacklist-api","imageUri":"%s"}]' "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json
+      - printf '{"ImageURI":"%s"}' "$REPOSITORY_URI:$IMAGE_TAG" > imageDetail.json
+      - echo "Compilación completada exitosamente el $(date)"
 
 reports:
   unit-tests:
     files:
       - reports/pruebas.xml
     file-format: JUNITXML
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - imageDetail.json
+    - appspec.json
+    - taskdef.json
+    - reports/pruebas.xml

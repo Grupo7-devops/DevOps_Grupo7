@@ -1,0 +1,38 @@
+{
+  "executionRoleArn": "arn:aws:iam::494080186169:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "blacklist-api",
+      "image": "<IMAGE1_NAME>",
+      "essential": true,
+      "portMappings": [
+        {
+          "hostPort": 8000,
+          "protocol": "tcp",
+          "containerPort": 8000
+        }
+      ],
+      "environment": [
+        {
+          "name": "STATIC_TOKEN",
+          "value": "dGVhbTdfZGV2b3BzX3NlY3JldF90b2tlbg=="
+        },
+        {
+          "name": "JWT_SECRET_KEY",
+          "value": "super-secret-jwt-key-grupo7"
+        },
+        {
+          "name": "DATABASE_URL",
+          "value": "sqlite:///blacklist.db"
+        }
+      ]
+    }
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "networkMode": "awsvpc",
+  "cpu": "512",
+  "memory": "1024",
+  "family": "blacklist-task"
+}
