@@ -9,6 +9,7 @@ Microservicio de **lista negra global de emails** (Flask + PostgreSQL).
 Request HTTP → api (controladores) → services (negocio) → repositories (datos) → PostgreSQL
 ```
 
+
 | Carpeta | Responsabilidad |
 |---------|-----------------|
 | `app/api/` | Endpoints REST, validación de entrada (schemas) y respuestas HTTP |
