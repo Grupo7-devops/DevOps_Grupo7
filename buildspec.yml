@@ -20,6 +20,7 @@ phases:
       - IMAGE_TAG=${COMMIT_HASH:=latest}
 
   build:
+    on-failure: ABORT
     commands:
       - echo "FASE 3A - PRUEBAS UNITARIAS"
       - python -m pytest --junitxml=reports/pruebas.xml test/

@@ -59,6 +59,6 @@ def test_get_blacklists_encuentra_email(client, auth_headers, monkeypatch):
         headers=auth_headers,
     )
 
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 201
     assert respuesta.get_json()["is_blacklisted"] is True
     assert respuesta.get_json()["blocked_reason"] == "fraude"
