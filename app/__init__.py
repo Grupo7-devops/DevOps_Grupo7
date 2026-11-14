@@ -27,10 +27,10 @@ def create_app(config_overrides=None):
         try:
             db.session.execute(text("SELECT 1"))
             return {"status": "ok", "database": "up",
-                    "version": APP_VERSION, "host": socket.gethostname()}, 200
+                    "version": APP_VERSION, "host": socket.gethostname(), "msg":"Cambios para el escenario 2 del pipeline"}, 200
         except Exception:
             return {"status": "error", "database": "down",
-                    "version": APP_VERSION, "host": socket.gethostname()}, 500
+                    "version": APP_VERSION, "host": socket.gethostname(), "msg":"Cambios para el escenario 2 del pipeline"}, 500
 
     with app.app_context():
         db.create_all()
