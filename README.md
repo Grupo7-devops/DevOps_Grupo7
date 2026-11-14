@@ -152,5 +152,5 @@ Retorna `200` en ambos casos (`is_blacklisted: false` si el email no está regis
 
 ### GET /health
 
-Chequeo de salud del servicio (sin autenticación).
+Chequeo de salud del servicio (sin autenticación). Retorna `200` con `{"status": "ok"}`.
 
