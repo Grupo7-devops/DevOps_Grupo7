@@ -154,3 +154,4 @@ Retorna `200` en ambos casos (`is_blacklisted: false` si el email no está regis
 
 Chequeo de salud del servicio (sin autenticación). Retorna `200` con `{"status": "ok"}`.
 
+Prueba
