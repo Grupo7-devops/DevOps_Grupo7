@@ -8,7 +8,7 @@ from .auth import init_jwt
 from .config import Config
 from .extensions import db, ma
 
-APP_VERSION = "v1"   # cámbielo en cada despliegue: v2, v3...
+APP_VERSION = "v4-newrelic"   # cámbielo en cada despliegue: v2, v3...
 
 
 def create_app(config_overrides=None):
@@ -27,10 +27,10 @@ def create_app(config_overrides=None):
         try:
             db.session.execute(text("SELECT 1"))
             return {"status": "ok", "database": "up",
-                    "version": APP_VERSION, "host": socket.gethostname(), "msg":"Cambios para el escenario 3 del pipeline"}, 200
+                    "version": APP_VERSION, "host": socket.gethostname()}, 200
         except Exception:
             return {"status": "error", "database": "down",
-                    "version": APP_VERSION, "host": socket.gethostname(), "msg":"Cambios para el escenario 3 del pipeline"}, 500
+                    "version": APP_VERSION, "host": socket.gethostname()}, 500
 
     with app.app_context():
         db.create_all()
